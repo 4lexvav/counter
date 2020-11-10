@@ -2,14 +2,16 @@
 
 declare(strict_types=1);
 
+namespace Counter\Services;
+
+use Exception;
+
 /**
  * Class Counter
  */
-class Counter {
-    /**
-     *
-     */
-    private const MODE = 'r+';
+class Counter
+{
+    private const MODE = 'a+';
 
     /**
      * @var string
@@ -25,15 +27,20 @@ class Counter {
      * Counter constructor.
      *
      * @param string $fileName
+     *
+     * @throws Exception
      */
     public function __construct(string $fileName)
     {
         $this->fileName = $fileName;
         $this->fp = fopen($fileName, self::MODE);
-        if (!flock($this->fp, LOCK_EX)) {
-            exit('Could not get the lock!');
+        if (!$this->fp) {
+            throw new Exception('Error opening file ' . $fileName);
         }
 
+        if (!flock($this->fp, LOCK_EX)) {
+            throw new Exception('Could not get the lock!');
+        }
     }
 
     /**
@@ -53,6 +60,17 @@ class Counter {
 
         ftruncate($this->fp, 0);
         fwrite($this->fp, (string) $count);
+    }
+
+    /**
+     * @return void
+     */
+    public function decrement(): void
+    {
+        $count = $this->count() - 1;
+
+        ftruncate($this->fp, 0);
+        fwrite($this->fp, (string) max($count, 0));
     }
 
     /**

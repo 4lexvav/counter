@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Counter\Services\Counter;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -42,6 +43,18 @@ class CounterTest extends TestCase
 
         $this->assertNotEquals($initial, $counter->count());
         $this->assertEquals(intval($initial) + 1, $counter->count());
+    }
+
+    public function testDecrement()
+    {
+        $initial = '6';
+        $this->write($initial);
+
+        $counter = new Counter(self::FILE_NAME);
+        $counter->decrement();
+
+        $this->assertNotEquals($initial, $counter->count());
+        $this->assertEquals(intval($initial) - 1, $counter->count());
     }
 
     /**

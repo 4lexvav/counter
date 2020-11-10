@@ -1,25 +1,11 @@
 <?php
 session_start();
 
+ini_set('log_errors', 1);
+ini_set('error_log', 'log/error.log');
+
 require __DIR__.'/vendor/autoload.php';
 
-const FILE_HITS = 'hits_counter.txt';
-const FILE_USERS = 'users_counter.txt';
+$app = new Counter\App();
 
-$usersCounter = new Counter(FILE_USERS);
-$hitsCounter = new Counter(FILE_HITS);
-$hitsCounter->increment();
-
-if (!isset($_SESSION['visited'])) {
-	$usersCounter->increment();
-	$_SESSION['visited'] = true;
-}
-
-?>
-
-<html>
-	<body>
-		<h4>Hits count: <?php echo $hitsCounter->count(); ?></h4>
-		<h4>Users count: <?php echo $usersCounter->count(); ?></h4>
-	</body>
-</html>
+$app->run();

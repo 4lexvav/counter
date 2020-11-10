@@ -1,0 +1,57 @@
+<?php
+use Counter\Services\Counter;
+
+$pages = [
+    '' => '/',
+    'news' => '/news',
+    'contacts' => '/contacts',
+    'about' => '/about',
+];
+
+/**
+ * @var string $page
+ * @var Counter $hitsCounter
+ * @var Counter $usersCounter
+ * @var Counter $pageCounter
+ */
+?>
+<html>
+    <head>
+        <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    </head>
+
+    <body>
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
+            <a class="navbar-brand" href="/">Counter</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <?php foreach ($pages as $name => $path): ?>
+                        <li class="nav-item <?= $name === $page ? 'active' : '' ?>">
+                            <a class="nav-link" href="<?= $path ?>"><?= $name ? ucfirst($name) : 'Home' ?></a>
+                        </li>
+                    <?php endforeach ?>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="container">
+            <div class="jumbotron">
+                <h4>Hits count: <?= $hitsCounter->count(); ?></h4>
+                <h4>Unique website users: <?= $usersCounter->count(); ?></h4>
+                <h4>Online users on this page: <?= $pageCounter->count(); ?></h4>
+            </div>
+        </main>
+    </body>
+
+    <script>
+        window.addEventListener('unload', function() {
+            const data = JSON.stringify({page: window.location.pathname.replace(/\/\$/, '')})
+
+            navigator.sendBeacon('/unregister/', data);
+        });
+    </script>
+</html>
