@@ -48,10 +48,9 @@ $pages = [
     </body>
 
     <script>
-        window.addEventListener('unload', function() {
+        window.addEventListener('beforeunload', function() {
             const data = JSON.stringify({page: window.location.pathname.replace(/\/\$/, '')})
-
-            navigator.sendBeacon('/unregister/', data);
+            navigator.sendBeacon('/unregister/', data)
         });
     </script>
 </html>

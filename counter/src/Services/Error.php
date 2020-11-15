@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Counter\Services;
 
+use Counter\Helpers\Logger;
 use Exception;
 use Throwable;
 
@@ -36,7 +37,7 @@ class Error
      * @param Throwable $exception
      */
     public function exceptionHandler(Throwable $exception) {
-        error_log($exception->__toString());
+        Logger::log($exception->__toString());
         exit('Error occurred. Please, reload the page.');
     }
 }

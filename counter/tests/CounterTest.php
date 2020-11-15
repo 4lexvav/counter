@@ -19,7 +19,8 @@ class CounterTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->fp = fopen(self::FILE_NAME, 'w+');
+        putenv('APP_ROOT_PATH='.dirname(__DIR__));
+        $this->fp = fopen('../tmp/' . self::FILE_NAME, 'a+');
     }
 
     public function testCount()
@@ -68,6 +69,6 @@ class CounterTest extends TestCase
 
     protected function tearDown(): void
     {
-        unlink(self::FILE_NAME);
+        unlink('../tmp/' . self::FILE_NAME);
     }
 }

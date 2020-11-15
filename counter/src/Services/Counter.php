@@ -33,7 +33,7 @@ class Counter
     public function __construct(string $fileName)
     {
         $this->fileName = $fileName;
-        $this->fp = fopen($fileName, self::MODE);
+        $this->fp = fopen($this->getFilePath(), self::MODE);
         if (!$this->fp) {
             throw new Exception('Error opening file ' . $fileName);
         }
@@ -48,7 +48,7 @@ class Counter
      */
     public function count(): int
     {
-        return (int) (file_get_contents($this->fileName) ?? 1);
+        return (int) (file_get_contents($this->getFilePath()) ?? 1);
     }
 
     /**
@@ -71,6 +71,14 @@ class Counter
 
         ftruncate($this->fp, 0);
         fwrite($this->fp, (string) max($count, 0));
+    }
+
+    /**
+     * @return string
+     */
+    private function getFilePath(): string
+    {
+        return getenv('APP_ROOT_PATH') . '/tmp/' . $this->fileName;
     }
 
     /**

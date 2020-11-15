@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Counter\Http\Controllers;
 
+use Counter\Helpers\Logger;
 use Counter\Services\Counter;
+use Counter\Services\StringProcessor;
 use Counter\Views\Template;
 use Exception;
 
@@ -22,9 +24,14 @@ class PageController
      * @var Template
      */
     private $template;
+    /**
+     * @var StringProcessor
+     */
+    private $stringProcessor;
 
     public function __construct()
     {
+        $this->stringProcessor = new StringProcessor();
         $this->template = new Template();
     }
 
@@ -39,6 +46,7 @@ class PageController
         $usersCounter = new Counter(self::FILE_USERS);
         $hitsCounter = new Counter(self::FILE_HITS);
         $pageCounter = new Counter($pageCounterFile);
+
         $hitsCounter->increment();
 
         if (!isset($_SESSION['visited'])) {
@@ -49,7 +57,7 @@ class PageController
         $pageKey = 'visited:' . $page;
         if (!isset($_SESSION[$pageKey])) {
             $pageCounter->increment();
-            $_SESSION[$pageKey] = true;
+            $_SESSION[$pageKey] = $_SERVER['REQUEST_TIME_FLOAT'];
         }
 
         $this->template->render('main', compact('page', 'usersCounter', 'hitsCounter', 'pageCounter'));
@@ -61,17 +69,30 @@ class PageController
     public function unregister()
     {
         $input = (string) file_get_contents('php://input');
-        $data = json_decode($input, true);
-        if (!$input || !is_array($data) || !isset($data['page'])) {
-            throw new Exception('Error decrementing counter');
+        if (!$input) {
+            throw new Exception('Error decrementing counter, missing input.');
         }
 
-        $page = trim(strip_tags($data['page']), '/');
+        $data = json_decode($input, true);
+        if (!is_array($data) || !isset($data['page'])) {
+            throw new Exception('Error decrementing counter, invalid input data.');
+        }
+
+        $page = $this->stringProcessor->process($data['page']);
         $pageFile = $page . '.txt';
 
-        $pageCounter = new Counter($pageFile);
-        $pageCounter->decrement();
+        Logger::debug('Page hit: ' . $_SERVER['REQUEST_URI'], [
+            'page' => $page ? $page : 'absent',
+            'request time' => $_SERVER['REQUEST_TIME_FLOAT'],
+            'session' => session_id(),
+        ]);
 
-        unset($_SESSION['visited:' . $page]);
+        $time = $_SESSION['visited:' . $page] ?? null;
+        if ($time && $time < $_SERVER['REQUEST_TIME_FLOAT']) {
+            unset($_SESSION['visited:' . $page]);
+
+            $pageCounter = new Counter($pageFile);
+            $pageCounter->decrement();
+        }
     }
 }
